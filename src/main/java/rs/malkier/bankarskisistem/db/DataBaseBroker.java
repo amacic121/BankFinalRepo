@@ -4,7 +4,6 @@ package rs.malkier.bankarskisistem.db;
 //import domain.Klijent;
 //import domain.Racun;
 //import domain.TipRacuna;
-
 import rs.malkier.bankarskisistem.domain.Klijent;
 import rs.malkier.bankarskisistem.domain.*;
 import rs.malkier.bankarskisistem.exception.BankaException;
@@ -12,6 +11,7 @@ import rs.malkier.bankarskisistem.exception.RacunException;
 
 import java.sql.*;
 import java.util.ArrayList;
+import rs.malkier.bankarskisistem.exception.KlijentException;
 
 public class DataBaseBroker {
 
@@ -36,13 +36,15 @@ public class DataBaseBroker {
         return connection;
     }
 
-    public void closeConection() {
+    public int closeConection() {
         try {
+            //System.out.println("Uspesno zatvorena konekcija");
             connection.close();
-            System.out.println("Uspesno zatvorena konekcija");
+
         } catch (SQLException e) {
-            System.out.println("Greska prilikom zatvaranja baze :(\n " + e.getMessage());
+            //System.out.println("Greska prilikom zatvaranja baze :(\n " + e.getMessage());
         }
+        return 3;
     }
 
     public void createBank(Banka banka) throws BankaException {
@@ -64,7 +66,6 @@ public class DataBaseBroker {
 
     }
 
-
     public ArrayList<Banka> getBanks() {
         ArrayList<Banka> banks = new ArrayList<>();
 
@@ -84,7 +85,7 @@ public class DataBaseBroker {
         return banks;
     }
 
-    public void createClient(Klijent klijent) {
+    public void createClient(Klijent klijent) throws KlijentException {
         String querry;
         try {
             querry = "INSERT INTO bank.schema_bank.klijent VALUES (?,?,?)";
@@ -96,6 +97,7 @@ public class DataBaseBroker {
             System.out.println("Uspesno sacuvana klijent");
         } catch (SQLException e) {
             System.out.println("Greska prilikom cuvanja klijenta\n " + e.getMessage());
+            throw new KlijentException("Neuspesno sacuvan klijent!");
         }
 
     }
@@ -123,7 +125,7 @@ public class DataBaseBroker {
 
     }
 
-    public void createRacun(Racun racun) {
+    public void createRacun(Racun racun) throws RacunException {
         String querry;
         try {
             querry = "INSERT INTO bank.schema_bank.racun VALUES (?,?,?,?, ?)";
@@ -137,7 +139,7 @@ public class DataBaseBroker {
             ps.executeUpdate();
             System.out.println("Uspesno sacuvan racun");
         } catch (SQLException e) {
-            System.out.println("Greska prilikom cuvanja racuna\n " + e.getMessage());
+             throw new RacunException("Greska prilikom kreiranja racuna!");
         }
 
     }
@@ -149,7 +151,6 @@ public class DataBaseBroker {
             PreparedStatement ps = connection.prepareStatement(querry);
             ps.setLong(1, id);
 
-
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 TipRacuna tipRacuna = new TipRacuna();
@@ -159,6 +160,7 @@ public class DataBaseBroker {
             }
             System.out.println("Uspesno sacuvan racun");
         } catch (SQLException e) {
+            
             System.out.println("Greska prilikom cuvanja racuna\n " + e.getMessage());
         }
         return null;
@@ -172,7 +174,6 @@ public class DataBaseBroker {
 
             ps.setLong(1, jmbg);
 
-
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 Klijent klijent = new Klijent();
@@ -187,30 +188,65 @@ public class DataBaseBroker {
         }
         return null;
     }
-    private List<> getKlijentByJmbgAndBank(long jmbg, Banka bank) {
-        String query;
+
+    public ArrayList<Racun> getKlijentByJmbgAndBank(long jmbg, long pib) throws RacunException {
+        String querry;
+        ArrayList<Racun> racuniKlijenta = new ArrayList<>();
         try {
-            query = "SELECT bank.schema_bank.KLIJENT.jmbg, bank.schema_bank.KLIJENT.ime_prezime,bank.schema_bank.KLIJENT.adresa FROM bank.schema_bank.KLIJENT JOIN bank.schema_bank.RACUN USING(JMBG) JOIN bank.schema_bank.BANKA USING(PIB) WHERE JMBG=? AND PIB=?;";
-            PreparedStatement ps = connection.prepareStatement(query);
+            querry = "SELECT * FROM bank.schema_bank.racun WHERE jmbg=? and pib=?";
+            PreparedStatement ps = connection.prepareStatement(querry);
 
             ps.setLong(1, jmbg);
-            ps.setLong(2, bank.getPib());
-
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                Klijent klijent = new Klijent();
-                klijent.setJmbg(rs.getLong(3));
-                klijent.setImePrezime(rs.getString(1));
-                klijent.setAdresa(rs.getString(2));
-                return klijent;
+            ps.setLong(2, pib);
+            Banka banka = getBank(pib);
+            if (banka == null) {
+                return null;
             }
-            System.out.println("Uspesno sacuvan racun");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Klijent klijent = new Klijent();
+                klijent = getKlijent(rs.getLong(2));
+                TipRacuna tip = getTipRacuna(rs.getLong(1));
+                Racun racun = new Racun();
+                racun.setKlijent(klijent);
+                racun.setTipRacuna(tip);
+                racun.setBanka(banka);
+                racun.setIznos(rs.getFloat(4));
+                racun.setBrojRacuna(rs.getString(5));
+                racuniKlijenta.add(racun);
+            }
+
         } catch (SQLException e) {
-            System.out.println("Greska prilikom cuvanja racuna\n " + e.getMessage());
+            throw new RacunException("Greska prilikom trazenja klijenta!");
         }
-        return null;
+        return racuniKlijenta;
+
     }
+
+//    private List<> getKlijentByJmbgAndBank(long jmbg, Banka bank) {
+//        String query;
+//        try {
+//            query = "SELECT bank.schema_bank.KLIJENT.jmbg, bank.schema_bank.KLIJENT.ime_prezime,bank.schema_bank.KLIJENT.adresa FROM bank.schema_bank.KLIJENT JOIN bank.schema_bank.RACUN USING(JMBG) JOIN bank.schema_bank.BANKA USING(PIB) WHERE JMBG=? AND PIB=?;";
+//            PreparedStatement ps = connection.prepareStatement(query);
+//
+//            ps.setLong(1, jmbg);
+//            ps.setLong(2, bank.getPib());
+//
+//
+//            ResultSet rs = ps.executeQuery();
+//            if (rs.next()) {
+//                Klijent klijent = new Klijent();
+//                klijent.setJmbg(rs.getLong(3));
+//                klijent.setImePrezime(rs.getString(1));
+//                klijent.setAdresa(rs.getString(2));
+//                return klijent;
+//            }
+//            System.out.println("Uspesno sacuvan racun");
+//        } catch (SQLException e) {
+//            System.out.println("Greska prilikom cuvanja racuna\n " + e.getMessage());
+//        }
+//        return null;
+//    }
     private Banka getBank(long pib) {
         String querry;
         try {
@@ -219,13 +255,12 @@ public class DataBaseBroker {
 
             ps.setLong(1, pib);
 
-
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 Banka banka = new Banka();
                 banka.setPib(rs.getLong(1));
                 banka.setNaziv(rs.getString(2));
-                banka.setAdresa(rs.getString(2));
+                banka.setAdresa(rs.getString(3));
                 banka.setKursEvro(rs.getFloat(4));
                 banka.setKursDolar(rs.getFloat(5));
                 banka.setKursEvroDolar(rs.getFloat(6));
@@ -291,7 +326,6 @@ public class DataBaseBroker {
 
             }
 
-
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
@@ -319,10 +353,9 @@ public class DataBaseBroker {
                 racun.setBanka(banka);
                 racun.setIznos(rs.getFloat(4));
                 racun.setBrojRacuna(rs.getString(5));
-            }else{
+            } else {
                 throw new RacunException("Ne postoji racun sa tim brojem!");
             }
-
 
         } catch (SQLException e) {
             System.out.println("Greska prilikom provere stanja \n" + e.getMessage());
@@ -437,14 +470,13 @@ public class DataBaseBroker {
                 ps4.executeUpdate();
                 connection.commit();
                 connection.setAutoCommit(true);
-                if (racunSa.getIznos() + iznos == 0) {
+                if (racunSa.getIznos() - iznos == 0) {
                     String queryDelete = "Delete from bank.schema_bank.racun where broj_racuna=?";
                     PreparedStatement psDelete = connection.prepareStatement(queryDelete);
                     psDelete.setString(1, racunSa.getBrojRacuna());
                     psDelete.executeUpdate();
                     System.out.println("Racun likvidiran");
                 }
-
 
             }
         } catch (SQLException e) {
@@ -453,6 +485,28 @@ public class DataBaseBroker {
         }
         return true;
     }
+
+    public ArrayList<TipRacuna> getTipovi() {
+        ArrayList<TipRacuna> tipovi = new ArrayList<>();
+        try {
+            Statement statement = connection.createStatement();
+            String query = "SELECT * FROM bank.schema_bank.tip_racuna";
+            ResultSet rs = statement.executeQuery(query);
+
+            while (rs.next()) {
+
+                TipRacuna tip = new TipRacuna();
+                tip.setId(rs.getLong(1));
+                tip.setIme(rs.getString(2));
+                tipovi.add(tip);
+
+            }
+        } catch (SQLException e) {
+            return null;
+        }
+        return tipovi;
+    }
+
 
 
 }

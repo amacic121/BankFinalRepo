@@ -5,9 +5,14 @@
 package rs.malkier.bankarskisistem;
 
 import rs.malkier.bankarskisistem.domain.*;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
+import java.util.Optional;
+import javax.swing.*;
+
 import rs.malkier.bankarskisistem.exception.RacunException;
 import rs.malkier.bankarskisistem.kontroler.Kontroler;
 
@@ -29,6 +34,10 @@ public class MainBankForm extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         jTextArea1.setEnabled(false);
         resetujFormu();
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        lblImeBanke.setText("BANKA: " + Kontroler.getInstance().getBanka().getNaziv());
+
     }
 
     /**
@@ -43,6 +52,7 @@ public class MainBankForm extends javax.swing.JFrame {
         buttonGroup1 = new javax.swing.ButtonGroup();
         jScrollPane2 = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         btnSearchAccount = new javax.swing.JButton();
         txtAccountId = new javax.swing.JTextField();
         panelAccount = new javax.swing.JPanel();
@@ -54,15 +64,12 @@ public class MainBankForm extends javax.swing.JFrame {
         btnAddAccount = new javax.swing.JButton();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
+        lblImeBanke = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu4 = new javax.swing.JMenu();
-        jMenu1 = new javax.swing.JMenu();
-        jmiNoviKorisnik = new javax.swing.JMenuItem();
-        jmiPostojeciKorisnik = new javax.swing.JMenuItem();
 
         jScrollPane2.setViewportView(jEditorPane1);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(Kontroler.getInstance().getDbb().closeConection());
 
         btnSearchAccount.setText("Search");
         btnSearchAccount.addActionListener(new java.awt.event.ActionListener() {
@@ -148,38 +155,17 @@ public class MainBankForm extends javax.swing.JFrame {
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setText("Account number");
 
-        jMenu4.setText("Detalji Racuna");
-        jMenuBar1.add(jMenu4);
-
-        jMenu1.setText("Dodaj Racun");
-
-        jmiNoviKorisnik.setText("Novi Korisnik");
-        jmiNoviKorisnik.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiNoviKorisnikActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiNoviKorisnik);
-
-        jmiPostojeciKorisnik.setText("Postojeci Korisnik");
-        jmiPostojeciKorisnik.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiPostojeciKorisnikActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiPostojeciKorisnik);
-
-        jMenuBar1.add(jMenu1);
-
+        lblImeBanke.setText("ime banke");
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(27, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblImeBanke)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jRadioButton1)
                         .addGap(18, 18, 18)
@@ -187,16 +173,18 @@ public class MainBankForm extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(panelAccount, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(txtAccountId)
+                            .addComponent(txtAccountId, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(271, 271, 271)
                             .addComponent(btnAddAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(btnSearchAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addGap(26, 26, 26))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(22, Short.MAX_VALUE)
+                .addComponent(lblImeBanke)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jRadioButton1)
                     .addComponent(jRadioButton2))
@@ -208,7 +196,7 @@ public class MainBankForm extends javax.swing.JFrame {
                 .addComponent(btnSearchAccount)
                 .addGap(35, 35, 35)
                 .addComponent(panelAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -241,16 +229,15 @@ public class MainBankForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void btnAddAccountActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddAccountActionPerformed
+        
+        if(racuni.size()==3){
+            JOptionPane.showMessageDialog(this, "You shall not pass!");
+            return;
+        }
         new AddNewAccount(this, true).setVisible(true);
+        azuriraj();
+
     }//GEN-LAST:event_btnAddAccountActionPerformed
-
-    private void jmiNoviKorisnikActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiNoviKorisnikActionPerformed
-        new AddNewAccount(this, true).setVisible(true);
-    }//GEN-LAST:event_jmiNoviKorisnikActionPerformed
-
-    private void jmiPostojeciKorisnikActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiPostojeciKorisnikActionPerformed
-        //new AddAcountToUser(this, true).setVisible(true);
-    }//GEN-LAST:event_jmiPostojeciKorisnikActionPerformed
 
     /**
      * @param args the command line arguments
@@ -291,20 +278,18 @@ public class MainBankForm extends javax.swing.JFrame {
     private javax.swing.JButton btnAddAccount;
     private javax.swing.JButton btnSearchAccount;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.Box.Filler filler1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JMenuItem jmiNoviKorisnik;
-    private javax.swing.JMenuItem jmiPostojeciKorisnik;
+    private javax.swing.JLabel lblImeBanke;
     private javax.swing.JPanel panelAccount;
     private javax.swing.JTextField txtAccountId;
     // End of variables declaration//GEN-END:variables
@@ -331,6 +316,10 @@ public class MainBankForm extends javax.swing.JFrame {
         }
 
         jTextArea1.setText(ispis);
+        Optional<Racun> bla = racuni.stream().filter(obj -> obj.getIznos() >= 1000000).findFirst();
+        if (bla.isPresent()) {
+            JOptionPane.showMessageDialog(this, "SMEKERUUUUUUUUUU");
+        }
 
     }
 
@@ -350,6 +339,10 @@ public class MainBankForm extends javax.swing.JFrame {
             try {
                 racuni.clear();
                 racuni = Kontroler.getInstance().vratiRacune(inputText);
+                if (racuni.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "ne postoji JMBG!");
+                    return;
+                }
             } catch (RacunException ex) {
                 JOptionPane.showMessageDialog(this, ex.getGreska());
                 return;

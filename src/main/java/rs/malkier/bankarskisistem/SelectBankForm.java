@@ -5,6 +5,9 @@
 package rs.malkier.bankarskisistem;
 
 import rs.malkier.bankarskisistem.domain.*;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import rs.malkier.bankarskisistem.kontroler.Kontroler;
@@ -22,6 +25,7 @@ public class SelectBankForm extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         srediFormu();
+
     }
 
     /**
@@ -83,8 +87,9 @@ public class SelectBankForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
-        new MainBankForm().setVisible(true);
         Kontroler.getInstance().setBanka((Banka) cmbBanks.getSelectedItem());
+        new MainBankForm().setVisible(true);
+
         dispose();
     }//GEN-LAST:event_btnStartActionPerformed
 
